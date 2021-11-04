@@ -3,31 +3,55 @@
 <canvas width=800 height=600>
 <script>
 'use strict'
-const Canvas = document.currentScript.parentNode;
-const [ CANVAS_W,CANVAS_H ] = [ 0 | Canvas.width,0 | Canvas.height ]
-const Ctx =  Canvas.getContext('2d');
-Ctx.font = "48px serif";
-let counter = 0
-let f100t = performance.now()
-let result = 'Ready'
-const main = () => {
-	requestAnimationFrame(main)
-	Ctx.clearRect(0,0,CANVAS_W,CANVAS_H)
-	const n = performance.now()
-	switch (0 | ++counter) {
-		case 100:
-			f100t = n
-			result = 'Start!'
-			break
-		case 600:
-			result = ((600 - 100) * 1000 / (n - f100t)).toFixed(2)
-			break
-	}
-	Ctx.fillText(counter, 10, 50)
-	Ctx.fillText(((n - f100t)/1000).toFixed(3), 10, 100)
-	Ctx.fillText(result, 10, 150)
+
+const Canvas = document.currentScript.parentNode,
+      Ctx = Canvas.getContext('2d'),
+      [ CANVAS_W,CANVAS_H ] = [ 0 | Canvas.width,0 | Canvas.height ],
+      SAMPLING_FRAMES = 300,
+      M2SEC = 1000,
+      FONT_X = 10,
+      FONT_H = 150
+
+let frames = 0,
+    ts0,
+    fps0,fps1,fps2
+
+Ctx.font = `${FONT_H}px serif`
+
+const main = ts => {
+    requestAnimationFrame(main)
+    Ctx.clearRect(0,0,CANVAS_W,CANVAS_H)
+
+    const fps = ++frames / (ts - ts0) * M2SEC
+
+    if (SAMPLING_FRAMES === frames) {
+        fps2 = fps1
+        fps1 = fps0
+        fps0 = `${fps.toFixed(1)} fps`
+        frames = 0
+        ts0 = ts
+    }
+
+    const PROGRESS = frames / SAMPLING_FRAMES
+
+    let y = FONT_H * PROGRESS >> 0
+
+    Ctx.fillStyle = 'red'
+    Ctx.fillText((fps * PROGRESS).toFixed(1),FONT_X,y += FONT_H)
+
+    Ctx.fillStyle = 'black'
+    Ctx.fillText(fps0,FONT_X,y += FONT_H)
+    Ctx.fillText(fps1,FONT_X,y += FONT_H)
+    Ctx.fillText(fps2,FONT_X,y += FONT_H)
 }
-main()
+
+requestAnimationFrame(ts => {
+    ts0 = ts
+    fps0 = fps1 = fps2 = ''
+    requestAnimationFrame(main)
+})
+
 </script>
 </canvas>
 </html>
+<!-- vim:set et ts=4 sw=0: -->
