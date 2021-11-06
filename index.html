@@ -1,6 +1,6 @@
 <!doctype html>
 <html>
-<canvas width=800 height=600>
+<canvas width=800 height=600 style="background-color:black">
 <script>
 'use strict'
 
@@ -8,9 +8,11 @@ const Canvas = document.currentScript.parentNode,
       Ctx = Canvas.getContext('2d'),
       [ CANVAS_W,CANVAS_H ] = [ 0 | Canvas.width,0 | Canvas.height ],
       SAMPLING_FRAMES = 300,
-      M2SEC = 1000,
+      ONE_SEC = 1000, // milliseconds
       FONT_X = 10,
       FONT_H = 150
+
+Canvas.onclick = Canvas.requestFullscreen
 
 let frames = 0,
     ts0,
@@ -22,12 +24,12 @@ const main = ts => {
     requestAnimationFrame(main)
     Ctx.clearRect(0,0,CANVAS_W,CANVAS_H)
 
-    const fps = ++frames / (ts - ts0) * M2SEC
+    const fps = ++frames / (ts - ts0) * ONE_SEC
 
     if (SAMPLING_FRAMES === frames) {
         fps2 = fps1
         fps1 = fps0
-        fps0 = `${fps.toFixed(1)} fps`
+        fps0 = `${fps.toFixed(1)} FPS`
         frames = 0
         ts0 = ts
     }
@@ -39,7 +41,7 @@ const main = ts => {
     Ctx.fillStyle = 'red'
     Ctx.fillText((fps * PROGRESS).toFixed(1),FONT_X,y += FONT_H)
 
-    Ctx.fillStyle = 'black'
+    Ctx.fillStyle = 'white'
     Ctx.fillText(fps0,FONT_X,y += FONT_H)
     Ctx.fillText(fps1,FONT_X,y += FONT_H)
     Ctx.fillText(fps2,FONT_X,y += FONT_H)
