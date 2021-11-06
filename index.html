@@ -1,5 +1,5 @@
 <!doctype html>
-<html>
+<html oncontextmenu="return false;" style="touch-action:none;-webkit-user-select:none">
 <canvas width=800 height=600 style="background-color:black">
 <script>
 'use strict'
@@ -13,6 +13,14 @@ const Canvas = document.currentScript.parentNode,
       FONT_H = 150
 
 Canvas.onclick = Canvas.requestFullscreen
+
+let [ px,py ] = [ 0,0 ]
+
+document.onpointerdown =
+document.onpointermove = e => {
+    px = 0 | (e.pageX - Canvas.offsetLeft)
+    py = 0 | (e.pageY - Canvas.offsetTop)
+}
 
 let frames = 0,
     ts0,
@@ -45,6 +53,9 @@ const main = ts => {
     Ctx.fillText(fps0,FONT_X,y += FONT_H)
     Ctx.fillText(fps1,FONT_X,y += FONT_H)
     Ctx.fillText(fps2,FONT_X,y += FONT_H)
+
+    Ctx.fillStyle = 'yellow'
+    Ctx.fillRect(px-50,py-50,100,100)
 }
 
 requestAnimationFrame(ts => {
