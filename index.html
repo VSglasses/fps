@@ -5,12 +5,14 @@
 'use strict'
 
 const Canvas = document.currentScript.parentNode,
-      Ctx = Canvas.getContext('2d'),
+      Ctx = Canvas.getContext('2d',{alpha:false}),
       [ CANVAS_W,CANVAS_H ] = [ 0 | Canvas.width,0 | Canvas.height ],
       SAMPLING_FRAMES = 300,
       ONE_SEC = 1000, // milliseconds
       FONT_X = 10,
       FONT_H = 150
+
+//console.log(Ctx.getContextAttributes())
 
 Canvas.onclick = Canvas.requestFullscreen
 
@@ -30,7 +32,8 @@ Ctx.font = `${FONT_H}px serif`
 
 const main = ts => {
     requestAnimationFrame(main)
-    Ctx.clearRect(0,0,CANVAS_W,CANVAS_H)
+    Ctx.fillStyle = 'black'
+    Ctx.fillRect(0,0,CANVAS_W,CANVAS_H)
 
     const fps = ++frames / (ts - ts0) * ONE_SEC
 
