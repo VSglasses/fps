@@ -1,38 +1,41 @@
 <!doctype html>
 <html oncontextmenu="return false;" style="touch-action:none;-webkit-user-select:none">
-<canvas width=800 height=600 style="position:absolute"></canvas>
 <canvas width=800 height=600>
 <script>
 'use strict'
 
-const Canvas1 = document.currentScript.parentNode,
-      Canvas0 = Canvas1.previousElementSibling,
-      [ CANVAS_W,CANVAS_H ] = [ 0 | Canvas0.width,0 | Canvas0.height ],
-      [ Ctx0,Ctx1 ] = [ Canvas0,Canvas1 ].map(c => c.getContext('2d',{alpha:false,desynchronized:true})),
+const Canvas = document.currentScript.parentNode,
+      [ CANVAS_W,CANVAS_H ] = [ 0 | Canvas.width,0 | Canvas.height ],
+      OffCvs = document.createElement('canvas')
+
+OffCvs.width  = CANVAS_W
+OffCvs.height = CANVAS_H
+
+const Ctx        = OffCvs.getContext('2d',{alpha:false,desynchronized:false}),
+      CtxVisible = Canvas.getContext('2d',{alpha:false,desynchronized:true}),
       SAMPLING_FRAMES = 300,
       ONE_SEC = 1000, // milliseconds
       FONT_X = 10,
       FONT_H = 150
 
-Canvas0.onclick = Canvas0.requestFullscreen
+Canvas.onclick = Canvas.requestFullscreen
 
 let [ px,py ] = [ 0,0 ]
 
 document.onpointerdown =
 document.onpointermove = e => {
-    px = 0 | (e.pageX - Canvas0.offsetLeft)
-    py = 0 | (e.pageY - Canvas0.offsetTop)
+    px = 0 | (e.pageX - Canvas.offsetLeft)
+    py = 0 | (e.pageY - Canvas.offsetTop)
 }
 
 let frames = 0,
     ts0,
     fps0,fps1,fps2
 
-Ctx0.font = Ctx1.font = `${FONT_H}px serif`
+Ctx.font = `${FONT_H}px serif`
 
 const main = ts => {
     requestAnimationFrame(main)
-    const Ctx = Canvas0.style.visibility === 'hidden' ? Ctx0 : Ctx1
     Ctx.fillStyle = 'black'
     Ctx.fillRect(0,0,CANVAS_W,CANVAS_H)
 
@@ -61,7 +64,7 @@ const main = ts => {
     Ctx.fillStyle = 'yellow'
     Ctx.fillRect(px-50,py-50,100,100)
 
-    Canvas0.style.visibility = Ctx === Ctx0 ? 'visible' : 'hidden'
+    CtxVisible.drawImage(OffCvs,0,0)
 }
 
 requestAnimationFrame(ts => {
