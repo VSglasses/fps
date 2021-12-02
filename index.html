@@ -1,24 +1,26 @@
 <!doctype html>
-<html oncontextmenu="return false;" style="touch-action:none;-webkit-user-select:none">
+<html oncontextmenu='return false;' style='touch-action:none;-webkit-user-select:none'>
+<header>
+<input type='radio' name='options' onclick='set_options(OPTS_NONE)' checked>none
+<input type='radio' name='options' onclick='set_options(OPTS_DESYNC)'>desynchronized
+<input type='radio' name='options' onclick='set_options(OPTS_DESYNC_WITH_OFFSCREEN)'>desync + offscreen
+</header>
+<canvas style='position:absolute'></canvas>
 <canvas width=800 height=600>
 <script>
 'use strict'
 
 const Canvas = document.currentScript.parentNode,
-      [ CANVAS_W,CANVAS_H ] = [ 0 | Canvas.width,0 | Canvas.height ],
-      OffCvs = document.createElement('canvas')
-
-OffCvs.width  = CANVAS_W
-OffCvs.height = CANVAS_H
-
-const Ctx        = OffCvs.getContext('2d',{alpha:false,desynchronized:false}),
-      CtxVisible = Canvas.getContext('2d',{alpha:false,desynchronized:true}),
+      OffCvs = Canvas.previousElementSibling,
+      [ CANVAS_W,CANVAS_H ] = [ OffCvs.width,OffCvs.height ] = [ Canvas.width |= 0,Canvas.height |= 0 ],
+      CtxCanvas = Canvas.getContext('2d',{alpha:false,desynchronized:true}),
+      CtxOffCvs = OffCvs.getContext('2d',{alpha:false,desynchronized:false}),
       SAMPLING_FRAMES = 300,
       ONE_SEC = 1000, // milliseconds
       FONT_X = 10,
       FONT_H = 150
 
-Canvas.onclick = Canvas.requestFullscreen
+//Canvas.onclick = Canvas.requestFullscreen
 
 let [ px,py ] = [ 0,0 ]
 
@@ -30,12 +32,39 @@ document.onpointermove = e => {
 
 let frames = 0,
     ts0,
-    fps0,fps1,fps2
+    fps0,fps1,fps2,
+    options
 
-Ctx.font = `${FONT_H}px serif`
+CtxCanvas.font = CtxOffCvs.font = `${FONT_H}px serif`
+
+const OPTS_NONE                  = 0,
+      OPTS_DESYNC                = 1,
+      OPTS_DESYNC_WITH_OFFSCREEN = 2
+
+const set_options = n => {
+    switch (options = 0 | n) {
+        case OPTS_NONE: {
+            Canvas.style.visibility = 'hidden'
+            OffCvs.style.visibility = 'visible'
+        } return
+
+        case OPTS_DESYNC:
+        case OPTS_DESYNC_WITH_OFFSCREEN: {
+            Canvas.style.visibility = 'visible'
+            OffCvs.style.visibility = 'hidden'
+        } return
+    }
+    alert(`error:set_options(${n})`)
+}
 
 const main = ts => {
     requestAnimationFrame(main)
+    const Ctx = [
+        CtxOffCvs, // OPTS_NONE
+        CtxCanvas, // OPTS_DESYNC
+        CtxOffCvs, // OPTS_DESYNC_WITH_OFFSCREEN
+    ][options]
+
     Ctx.fillStyle = 'black'
     Ctx.fillRect(0,0,CANVAS_W,CANVAS_H)
 
@@ -54,7 +83,7 @@ const main = ts => {
     let y = FONT_H * PROGRESS >> 0
 
     Ctx.fillStyle = 'red'
-    Ctx.fillText((fps * PROGRESS).toFixed(1),FONT_X,y += FONT_H)
+    Ctx.fillText(`${frames}f/${((ts - ts0) / ONE_SEC).toFixed(2)}s`,FONT_X,y += FONT_H)
 
     Ctx.fillStyle = 'white'
     Ctx.fillText(fps0,FONT_X,y += FONT_H)
@@ -62,14 +91,17 @@ const main = ts => {
     Ctx.fillText(fps2,FONT_X,y += FONT_H)
 
     Ctx.fillStyle = 'yellow'
-    Ctx.fillRect(px-50,py-50,100,100)
+    Ctx.fillRect(px - 50,py - 50,100,100)
 
-    CtxVisible.drawImage(OffCvs,0,0)
+    if (OPTS_DESYNC_WITH_OFFSCREEN === options) {
+        CtxCanvas.drawImage(OffCvs,0,0)
+    }
 }
 
 requestAnimationFrame(ts => {
     ts0 = ts
     fps0 = fps1 = fps2 = ''
+    set_options(OPTS_NONE)
     requestAnimationFrame(main)
 })
 
